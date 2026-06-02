@@ -1,0 +1,139 @@
+{
+  "theme": "LIGHT",
+  "archetype": "4 (Swiss & High-Contrast / Editorial Tech)",
+  "design_philosophy": "Cinematic, editorial, and tech-forward. High contrast monochrome UI allowing complex generative 3D WebGL art to take center stage. Tension through asymmetry, massive serif typography mixed with technical monospace. Absolutely NO Inter, NO purple gradients, NO generic card grids.",
+  "colors": {
+    "background": "#F5F5F7",
+    "surface": "#FFFFFF",
+    "surface_glass": "rgba(255, 255, 255, 0.7)",
+    "text_primary": "#0A0A0A",
+    "text_secondary": "#52525B",
+    "accent": "#000000",
+    "particle_cloud": {
+      "base": "#1A1A1A",
+      "highlight": "#333333",
+      "glow": "rgba(0, 0, 0, 0.1)"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Cormorant Garamond, serif",
+      "weights": ["400", "600"],
+      "classes": "font-serif tracking-tight text-text_primary"
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "weights": ["400"],
+      "classes": "font-sans text-text_secondary leading-relaxed"
+    },
+    "technical_mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400"],
+      "classes": "font-mono uppercase tracking-[0.2em] text-xs"
+    }
+  },
+  "layout_and_spacing": {
+    "philosophy": "Asymmetric, overlapping elements, utilizing the 'Tetris' bento grid for work showcases, and fluid editorial flow for the rest.",
+    "container": "max-w-screen-2xl mx-auto px-6 md:px-12",
+    "section_spacing": "py-24 md:py-40"
+  },
+  "visual_enhancers": {
+    "noise_texture": "Subtle SVG grain overlay (opacity 0.03) fixed across the entire background to kill digital flatness.",
+    "glassmorphism": "Used only for the sticky navigation and floating heart counter: bg-white/70 backdrop-blur-xl border border-black/5 shadow-[0_8px_32px_rgba(0,0,0,0.04)] saturate-150",
+    "borders": "1px solid rgba(0,0,0,0.1) for structural separation."
+  },
+  "components": {
+    "navigation": {
+      "type": "Sticky Glass Header",
+      "layout": "Flex space-between, items-center. Left: Logo/Name 'Second Life Software' (Mono). Center: Links 'Work, Topics, About, Contact' (Mono). Right: Subscribe CTA button.",
+      "classes": "fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-black/5 h-20 px-6 md:px-12 flex items-center justify-between saturate-150"
+    },
+    "heart_counter": {
+      "type": "Floating Widget",
+      "position": "Fixed bottom-8 right-8 z-40",
+      "style": "Glassmorphism pill, containing an SVG heart icon and a counter (e.g., 24,053). Clicking triggers a micro-animation (scale up, heart fills red, counter increments).",
+      "classes": "flex items-center gap-2 px-5 py-3 rounded-full bg-white/80 backdrop-blur-md border border-black/10 shadow-lg cursor-pointer hover:scale-105 transition-transform text-black font-mono text-sm"
+    },
+    "hero_section": {
+      "layout": "Full height (min-h-screen) relative container.",
+      "background_3d": "React Three Fiber (R3F) Canvas taking up the entire background (absolute inset-0 -z-10). Render a 3D particle morphing head based on the provided selfie video.",
+      "content": "Massive H1 'Creating content that connects' broken into staggered lines. Positioned asymmetrically (left-aligned, pushed down 40vh).",
+      "typography": "H1: text-5xl md:text-7xl lg:text-[7vw] leading-[0.9] font-serif font-light text-black."
+    },
+    "stats_section": {
+      "layout": "Grid cols-1 md:grid-cols-4 gap-8 py-20 border-t border-black/10",
+      "content": "Large metric numbers/text (Serif, text-4xl md:text-5xl) + small mono labels. 'Over one million curious people. Across YouTube, TikTok, Reels and Shorts.'",
+      "classes": "text-left"
+    },
+    "work_showcase": {
+      "layout": "Tetris Grid (Mode A). col-span mixes (8, 4, full) to create asymmetric image blocks.",
+      "card_style": "Flat, 0px border radius, subtle hover zoom inside overflow-hidden containers.",
+      "typography": "Hover reveals project title in large serif overlay."
+    },
+    "topics_section": {
+      "layout": "Editorial list. Flex col, border-b border-black/10 on each item.",
+      "item_style": "Group hover effects: large serif text shifts right, mono index number fades in. Huge text (text-4xl md:text-6xl py-10)."
+    },
+    "about_section": {
+      "layout": "Grid cols-1 md:grid-cols-12 gap-12 py-32",
+      "content": "Col-span-4: Sticky portrait/abstract image. Col-span-8: Flowing biographical text (text-3xl md:text-5xl leading-tight font-serif). Featuring Durrell Smith of Second Life Software. 'Creators, engineers, founders, swapping wands, nodes.'"
+    },
+    "contact_subscribe": {
+      "layout": "Massive footer-like section. Centered layout, py-40.",
+      "form": "Minimalist input field (border-b-2 border-black, no background, outline-none). Huge placeholder 'ENTER EMAIL'. Submit arrow button.",
+      "title": "SO MUCH INFO",
+      "action": "Connects to backend /api/subscribe to save to MongoDB.",
+      "classes": "flex flex-col items-center justify-center text-center"
+    },
+    "footer": {
+      "layout": "Flex flex-col md:flex-row space-between items-center py-8 border-t border-black/10",
+      "content": "'Made by Second Life Software using Emergent.' in technical mono font."
+    }
+  },
+  "animations": {
+    "scroll_choreography": {
+      "engine": "Framer Motion + Lenis Smooth Scroll",
+      "text_reveal": "Lines of text in Hero and About sections use overflow-hidden wrappers with motion.div translating Y from 100% to 0% on scroll into view.",
+      "3d_morph": "Tie the R3F particle morphing progress to the scroll position using Framer Motion's useScroll. As user scrolls down, the head breaks apart into abstract wireframes and nodes."
+    },
+    "micro_interactions": {
+      "buttons": "Hovering over nav links triggers a subtle opacity shift or technical brackets `[ ]` appearing.",
+      "images": "Image containers have overflow-hidden. Images inside scale to 105% on hover (transition-transform duration-700 ease-out)."
+    }
+  },
+  "media": {
+    "hero_reference_selfie": {
+      "url": "https://customer-assets.emergentagent.com/job_27170ab9-9efd-4890-adb4-029fbf9fd991/artifacts/slyktin3_IMG_1155.MOV",
+      "description": "Source video to use as a texture or reference for extracting a frame to build the 3D particle morphing head."
+    },
+    "work_images": [
+      {
+        "url": "https://images.pexels.com/photos/10194138/pexels-photo-10194138.jpeg",
+        "category": "work_showcase",
+        "description": "Abstract 3D wireframe"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1590859808308-3d2d9c515b1a",
+        "category": "work_showcase",
+        "description": "Generative tech particles"
+      },
+      {
+        "url": "https://images.pexels.com/photos/25626428/pexels-photo-25626428.jpeg",
+        "category": "work_showcase",
+        "description": "Conceptual 3D cube data visualization"
+      }
+    ]
+  },
+  "technical_instructions": {
+    "3d_implementation": "Use @react-three/fiber and @react-three/drei. Implement a point cloud geometry that transitions shapes or scatters based on scroll. Since extracting 3D meshes from a video programmatically in a React app is complex, use a placeholder generic head mesh or standard sphere/box geometry that morphs into abstract noise/particles, but texture it with a still frame extracted from the selfie video if possible. The particle material should be a custom shader for glowing dots.",
+    "testing": "All interactive elements MUST include data-testid. Examples: data-testid='nav-work', data-testid='subscribe-input', data-testid='subscribe-submit', data-testid='heart-counter'.",
+    "dependencies_to_add": [
+      "@react-three/fiber",
+      "@react-three/drei",
+      "three",
+      "framer-motion",
+      "@studio-freight/lenis",
+      "lucide-react"
+    ]
+  }
+}
