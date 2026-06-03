@@ -31,14 +31,14 @@ export default function Hero() {
                 <div className="mt-2">Atlanta, GA</div>
             </div>
 
-            {/* Main typographic block */}
-            <div className="relative z-10 max-w-screen-2xl mx-auto px-6 md:px-12 pt-[44vh] md:pt-[38vh] pb-32 flex justify-end">
-                <div className="max-w-2xl text-right">
+            {/* Main typographic block — right column only, sized to avoid the face */}
+            <div className="relative z-10 max-w-screen-2xl mx-auto px-6 md:px-12 pt-[36vh] md:pt-[28vh] pb-32 grid grid-cols-12 gap-6">
+                <div className="col-span-12 md:col-start-8 md:col-span-5 text-right">
                     <h1
                         data-testid={HERO.title}
-                        className="font-serif font-light text-ink leading-[0.92] tracking-tight"
+                        className="font-serif font-light text-ink leading-[0.95] tracking-tight"
                         style={{
-                            fontSize: "clamp(2.5rem, 6.5vw, 7rem)",
+                            fontSize: "clamp(2.25rem, 4.4vw, 4.75rem)",
                         }}
                     >
                         <span className="block italic font-normal text-rust-deep">
@@ -50,17 +50,17 @@ export default function Hero() {
                         </span>
                     </h1>
 
-                    <div className="mt-12 flex flex-col items-end gap-6">
+                    <div className="mt-10 flex flex-col items-end gap-5">
                         <div>
                             <div
                                 data-testid={HERO.name}
-                                className="font-serif text-2xl md:text-3xl text-ink"
+                                className="font-serif text-xl md:text-2xl text-ink"
                             >
                                 Durrell Smith
                             </div>
                             <div
                                 data-testid={HERO.role}
-                                className="font-mono text-[11px] uppercase tracking-[0.25em] text-ink-soft mt-1"
+                                className="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mt-1"
                             >
                                 Designer — Second Life Software
                             </div>
@@ -68,7 +68,7 @@ export default function Hero() {
 
                         <p
                             data-testid={HERO.subtitle}
-                            className="font-sans text-sm md:text-base text-ink max-w-md leading-relaxed bg-cream/55 backdrop-blur-[2px] px-4 py-3 rounded-sm border border-ink/5"
+                            className="font-sans text-xs md:text-sm text-ink max-w-xs leading-relaxed bg-cream/70 backdrop-blur-[2px] px-3.5 py-2.5 rounded-sm border border-ink/5"
                         >
                             Crafting interfaces, identities and moving
                             images for creators, engineers and founders

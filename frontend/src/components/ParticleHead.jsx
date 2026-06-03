@@ -202,6 +202,8 @@ export default function ParticleHead({ imgSrc, testid }) {
         });
 
         const points = new THREE.Points(geom, material);
+        // Shift the face to the left half so the right side is free for copy
+        points.position.x = -22;
         scene.add(points);
 
         // Load texture
