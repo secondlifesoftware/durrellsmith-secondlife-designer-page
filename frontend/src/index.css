@@ -684,6 +684,256 @@ html {
     opacity: 1;
 }
 
+/* ----------------------------------------------------------------------
+   UX Design planet — 1950s-style paper cars driving across the page.
+   Each car is a clip-path body silhouette (curved roof + windshield)
+   painted with its Behance project cover image, with two whitewall
+   wheels sitting BELOW the body with a visible gap — like a toy car
+   with separated wheels. The fleet floats on the cream page background.
+   ---------------------------------------------------------------------- */
+
+.paper-car-fleet {
+    position: relative;
+    width: 100%;
+    min-height: 340px;
+    overflow: hidden;
+}
+
+/* Drive across the page — cars enter from the left and exit at the
+   right, then loop. All cars share this animation at the same duration
+   so the constant phase offsets between them never close (no catching
+   up = no overlap). The lap range is intentionally wide (~1060% of car
+   width) so even with 7 cars spread evenly there's a generous cream
+   gap between adjacent cars. */
+@keyframes car-drive {
+    0% {
+        transform: translateX(-160%);
+    }
+    100% {
+        transform: translateX(900%);
+    }
+}
+
+/* Bumpy-road bob — small fast vertical hop on the body only, so the
+   wheels stay planted on imaginary ground. */
+@keyframes car-bump {
+    0%,
+    100% {
+        translate: 0 0;
+    }
+    50% {
+        translate: 0 -3px;
+    }
+}
+
+/* Wheel spin */
+@keyframes car-wheel-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.paper-car {
+    position: absolute;
+    top: var(--car-lane, 20px);
+    left: 0;
+    width: 180px;
+    height: 120px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: none;
+    animation: car-drive var(--car-speed, 42s) linear infinite;
+    animation-delay: var(--car-delay, 0s);
+    z-index: 1;
+}
+.paper-car:hover {
+    animation-play-state: paused;
+    z-index: 5;
+}
+
+/* Body sits in the top portion of the car container, leaving room
+   below for the wheels with a visible gap. */
+.paper-car-body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 72%;
+    /* 1950s-coupe silhouette: long body, curved roof, sloped windshield
+       and a slight rear fin. */
+    clip-path: polygon(
+        3% 100%,
+        3% 60%,
+        9% 45%,
+        20% 25%,
+        38% 6%,
+        65% 6%,
+        80% 25%,
+        92% 45%,
+        97% 60%,
+        97% 100%
+    );
+    filter: drop-shadow(0 6px 10px rgba(42, 24, 16, 0.35));
+    transition: filter 0.4s ease-out;
+    animation: car-bump var(--car-bob-dur, 0.85s) ease-in-out infinite;
+    animation-delay: var(--car-bob-delay, 0s);
+    background-color: var(--car-tint, #c4432c);
+}
+.paper-car:hover .paper-car-body {
+    filter: drop-shadow(0 12px 18px rgba(42, 24, 16, 0.5));
+}
+
+.paper-car-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.paper-car-tint {
+    position: absolute;
+    inset: 0;
+    background: var(--car-tint, #c4432c);
+}
+
+/* Vertical paper-fold crease running down the centre of the body */
+.paper-car-fold {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+        to right,
+        transparent 47%,
+        rgba(0, 0, 0, 0.24) 49.5%,
+        rgba(255, 255, 255, 0.42) 50%,
+        rgba(0, 0, 0, 0.18) 50.5%,
+        transparent 53%
+    );
+    mix-blend-mode: multiply;
+}
+
+/* Paper sheen — top of body catches light, rocker panel reads shadowed */
+.paper-car-sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(249, 239, 222, 0.35) 0%,
+            transparent 40%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(42, 24, 16, 0.3) 0%,
+            transparent 35%
+        );
+    mix-blend-mode: overlay;
+}
+
+/* Big curved windshield + side window glass — a glossy cyan-blue band
+   along the roof of the car */
+.paper-car-window {
+    position: absolute;
+    top: 12%;
+    left: 28%;
+    right: 28%;
+    height: 28%;
+    background: linear-gradient(
+        135deg,
+        rgba(190, 225, 240, 0.85),
+        rgba(110, 170, 200, 0.78)
+    );
+    border-radius: 60% 60% 8px 8px / 70% 70% 8px 8px;
+    border: 1px solid rgba(42, 24, 16, 0.35);
+    box-shadow: inset 0 -2px 6px rgba(255, 255, 255, 0.35);
+    z-index: 3;
+}
+
+/* Headlight glow on the front-right of the car */
+.paper-car-headlight {
+    position: absolute;
+    top: 60%;
+    right: 4%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff5d8;
+    box-shadow: 0 0 10px 3px rgba(255, 226, 130, 0.85);
+    z-index: 4;
+}
+
+/* Wheels — sit BELOW the body in the bottom 22% of the car, with a
+   visible cream-colored gap (about 6%) between the body's chassis edge
+   and the top of the wheels. Two wheels, vintage 1950s whitewall style. */
+.paper-car-wheel {
+    position: absolute;
+    bottom: 4%;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    /* Layered radial — hubcap dot + tire rubber + whitewall + outer rim */
+    background: radial-gradient(
+        circle at 50% 50%,
+        #c4432c 0%,
+        #c4432c 14%,
+        #2a1810 16%,
+        #2a1810 42%,
+        #f9efde 44%,
+        #f9efde 56%,
+        #1a0c06 58%,
+        #000 100%
+    );
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        inset 0 -1px 2px rgba(255, 255, 255, 0.1);
+    z-index: 4;
+    animation: car-wheel-spin 0.6s linear infinite;
+}
+.paper-car-wheel--back {
+    left: 14%;
+}
+.paper-car-wheel--front {
+    right: 14%;
+}
+
+/* Hover-only label with the project title */
+.paper-car-label {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    margin-bottom: 6px;
+    padding: 4px 10px;
+    background: rgba(42, 24, 16, 0.85);
+    color: #f9efde;
+    font-family:
+        "JetBrains Mono",
+        ui-monospace,
+        monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease-out;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.paper-car:hover .paper-car-label {
+    opacity: 1;
+}
+
 /* ----- Player modal ----- */
 .music-modal-backdrop {
     position: fixed;

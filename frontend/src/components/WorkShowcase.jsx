@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { WORK } from "@/constants/testIds";
 import OrbitingWork from "@/components/OrbitingWork";
 import MusicBoatFleet from "@/components/MusicBoatFleet";
+import UXCarFleet from "@/components/UXCarFleet";
 
 /* ------------------------------------------------------------------------
    Real planetary orbits — mean longitudes at J2000 epoch + mean motion
@@ -401,12 +402,7 @@ export default function WorkShowcase() {
 
                     <div className="mt-10 md:mt-14">
                         {selected.key === "art" && <ArtworkFan />}
-                        {selected.key === "ux" && (
-                            <ComingSoonFan
-                                label="UX Design"
-                                accent={selected.color}
-                            />
-                        )}
+                        {selected.key === "ux" && <UXCarFleet />}
                         {selected.key === "music" && <MusicBoatFleet />}
                     </div>
                 </div>

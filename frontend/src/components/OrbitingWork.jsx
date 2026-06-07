@@ -116,35 +116,100 @@ export default function OrbitingWork({
         scene.add(system);
 
         // ---- sun ----
-        const sun = new THREE.Mesh(
-            new THREE.SphereGeometry(cfg.sunSize, 48, 48),
-            new THREE.MeshBasicMaterial({ color: cfg.sunCoreColor }),
-        );
-        system.add(sun);
+        // Two billboard sprites with canvas-painted radial gradients —
+        // a bright incandescent core that fades smoothly to transparent
+        // at its edge, and a wider warm corona that surrounds it. No
+        // mesh edges means no thin dark ring where shader halo meets
+        // solid sphere; the sun reads as a continuous glow.
+        function makeSunCoreTexture() {
+            const size = 512;
+            const c = document.createElement("canvas");
+            c.width = size;
+            c.height = size;
+            const x = c.getContext("2d");
+            x.clearRect(0, 0, size, size);
 
-        // sun rim glow
-        const sunHalo = new THREE.Mesh(
-            new THREE.SphereGeometry(cfg.sunSize * 2.2, 48, 48),
-            new THREE.ShaderMaterial({
+            // Main radial gradient — white-hot center → pale yellow →
+            // orange → fades to transparent at the edge.
+            const grad = x.createRadialGradient(
+                size / 2,
+                size / 2,
+                0,
+                size / 2,
+                size / 2,
+                size / 2,
+            );
+            grad.addColorStop(0.0, "rgba(255, 250, 230, 1)");
+            grad.addColorStop(0.18, "rgba(255, 235, 180, 1)");
+            grad.addColorStop(0.4, "rgba(255, 195, 120, 1)");
+            grad.addColorStop(0.62, "rgba(235, 130, 70, 0.95)");
+            grad.addColorStop(0.82, "rgba(196, 67, 44, 0.5)");
+            grad.addColorStop(1.0, "rgba(196, 67, 44, 0)");
+            x.fillStyle = grad;
+            x.fillRect(0, 0, size, size);
+
+            // Subtle surface "granulation" — small bright flecks like
+            // photosphere convection cells.
+            for (let i = 0; i < 380; i++) {
+                const r = Math.sqrt(Math.random()) * (size * 0.36);
+                const a = Math.random() * Math.PI * 2;
+                const cx = size / 2 + Math.cos(a) * r;
+                const cy = size / 2 + Math.sin(a) * r;
+                x.fillStyle = `rgba(255, 230, 170, ${0.05 + Math.random() * 0.1})`;
+                x.fillRect(cx, cy, 2, 2);
+            }
+            return new THREE.CanvasTexture(c);
+        }
+
+        function makeSunCoronaTexture() {
+            const size = 512;
+            const c = document.createElement("canvas");
+            c.width = size;
+            c.height = size;
+            const x = c.getContext("2d");
+            x.clearRect(0, 0, size, size);
+            const grad = x.createRadialGradient(
+                size / 2,
+                size / 2,
+                size * 0.12,
+                size / 2,
+                size / 2,
+                size / 2,
+            );
+            grad.addColorStop(0.0, "rgba(255, 180, 110, 0.55)");
+            grad.addColorStop(0.4, "rgba(232, 110, 60, 0.25)");
+            grad.addColorStop(0.75, "rgba(196, 67, 44, 0.08)");
+            grad.addColorStop(1.0, "rgba(196, 67, 44, 0)");
+            x.fillStyle = grad;
+            x.fillRect(0, 0, size, size);
+            return new THREE.CanvasTexture(c);
+        }
+
+        const sun = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: makeSunCoreTexture(),
                 transparent: true,
-                side: THREE.BackSide,
                 depthWrite: false,
-                uniforms: {
-                    uColor: { value: new THREE.Color(cfg.sunColor) },
-                },
-                vertexShader: `varying vec3 vN;
-                  void main() {
-                    vN = normalize(normalMatrix * normal);
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                  }`,
-                fragmentShader: `uniform vec3 uColor; varying vec3 vN;
-                  void main() {
-                    float i = pow(0.78 - dot(vN, vec3(0.0, 0.0, 1.0)), 2.2);
-                    gl_FragColor = vec4(uColor, 1.0) * i;
-                  }`,
+                depthTest: false,
+                blending: THREE.NormalBlending,
             }),
         );
-        system.add(sunHalo);
+        sun.scale.set(cfg.sunSize * 2.6, cfg.sunSize * 2.6, 1);
+        sun.renderOrder = 2;
+        system.add(sun);
+
+        const sunCorona = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: makeSunCoronaTexture(),
+                transparent: true,
+                depthWrite: false,
+                depthTest: false,
+                blending: THREE.AdditiveBlending,
+            }),
+        );
+        sunCorona.scale.set(cfg.sunSize * 6.5, cfg.sunSize * 6.5, 1);
+        sunCorona.renderOrder = 1;
+        system.add(sunCorona);
 
         // ---- lights ----
         // Bumped ambient so the dark sides of planets stay readable
@@ -470,9 +535,22 @@ export default function OrbitingWork({
             camera.position.z +=
                 (targetTz - camera.position.z) * 0.06;
 
-            // sun pulse
-            const pulse = 0.9 + Math.sin(tElapsed * 2.7) * 0.1;
-            sun.scale.setScalar(pulse);
+            // sun + corona pulse — the corona breathes slightly slower
+            // and at a larger amplitude than the core, so the glow looks
+            // alive without making the disc itself feel rubbery.
+            const corePulse = 0.92 + Math.sin(tElapsed * 2.7) * 0.08;
+            const coronaPulse =
+                0.94 + Math.sin(tElapsed * 1.6 + 0.6) * 0.12;
+            sun.scale.set(
+                cfg.sunSize * 2.6 * corePulse,
+                cfg.sunSize * 2.6 * corePulse,
+                1,
+            );
+            sunCorona.scale.set(
+                cfg.sunSize * 6.5 * coronaPulse,
+                cfg.sunSize * 6.5 * coronaPulse,
+                1,
+            );
 
             // orbits + self-rotation + labels
             planets.forEach((p) => {
