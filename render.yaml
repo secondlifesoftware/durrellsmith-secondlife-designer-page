@@ -1,58 +1,39 @@
-# Render Blueprint — defines the backend + frontend services in one file.
-# After importing this blueprint via render.com/select-repo, Render spins
-# up both services and links them automatically.
+# Render Blueprint — deploys ONLY the portfolio's static React frontend.
 #
-#   Backend  → FastAPI app at https://<backend-service>.onrender.com
-#              serving /api/* (including the Behance proxy)
-#   Frontend → built React app served as static files at
-#              https://<frontend-service>.onrender.com
+# There is NO separate backend service here. The live Behance feed is served
+# by the EXISTING Second Life Software admin backend
+# (https://sls-admin.onrender.com), which now hosts the public
+# /api/behance/{username} proxy route. The portfolio reuses that backend, so
+# you don't deploy a second service.
 #
-# After the first deploy:
-#   1. Copy the BACKEND URL into the frontend's REACT_APP_BACKEND_URL var
-#      (Render dashboard → frontend service → Environment) and trigger a
-#      manual rebuild.
-#   2. (Optional, recommended) restrict CORS_ORIGINS on the backend to
-#      your frontend's public URL instead of "*".
+# After importing this blueprint (or creating the static site manually):
+#   1. Add the custom domain  design.secondlifesoftware.com  to this service,
+#      then create the DNS record (CNAME) that Render shows you.
+#   2. On the existing  sls-admin  backend service, append
+#         https://design.secondlifesoftware.com
+#      to its CORS_ORIGINS env var (comma-separated) and redeploy — otherwise
+#      the browser will block the cross-origin /api/behance/* request.
+#
+# The Behance feed degrades gracefully: if the backend is unreachable, the UX
+# section falls back to its bundled snapshot, so the page is never empty.
 
 services:
-  # ---------- FastAPI backend ----------
-  - type: web
-    name: durrellsmith-backend
-    runtime: python
-    plan: free
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
-    healthCheckPath: /api/
-    envVars:
-      # Permissive by default so the frontend can fetch /api/* from any
-      # origin. After deploy, restrict this to your frontend's URL.
-      - key: CORS_ORIGINS
-        value: "*"
-      # Mongo is OPTIONAL — the portfolio doesn't need it. Leave these
-      # unset to skip Mongo entirely; the /api/status template endpoints
-      # will 503 but /api/behance/{username} works fine.
-      # - key: MONGO_URL
-      #   sync: false
-      # - key: DB_NAME
-      #   value: portfolio
-
-  # ---------- React frontend (static) ----------
+  # ---------- React frontend (static only) ----------
   - type: web
     name: durrellsmith-frontend
     runtime: static
     rootDir: frontend
     buildCommand: yarn install --frozen-lockfile && yarn build
     staticPublishPath: ./build
-    # SPA fallback — every unmatched URL serves the React app so deep
-    # links (#work, #about, etc.) keep working on refresh.
+    # SPA fallback — every unmatched URL serves the React app so deep links
+    # (#work, #about, etc.) keep working on refresh.
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
     envVars:
-      # Set this to your backend service's public URL after first deploy.
-      # The frontend reads it at BUILD time, so editing this and clicking
-      # "Manual Deploy" will rebake the value into the bundle.
+      # Live Behance feed is served by the existing SLS admin backend.
+      # This is read at BUILD time and baked into the bundle, so changing it
+      # requires a rebuild ("Manual Deploy" → "Clear build cache & deploy").
       - key: REACT_APP_BACKEND_URL
-        sync: false
+        value: https://sls-admin.onrender.com
