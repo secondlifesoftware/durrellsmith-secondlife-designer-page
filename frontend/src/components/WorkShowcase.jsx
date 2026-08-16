@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { WORK } from "@/constants/testIds";
 import OrbitingWork from "@/components/OrbitingWork";
-import MusicBoatFleet from "@/components/MusicBoatFleet";
-import UXCarFleet from "@/components/UXCarFleet";
+import ExplodedProjects from "@/components/ExplodedProjects";
 
 /* ------------------------------------------------------------------------
    Real planetary orbits — mean longitudes at J2000 epoch + mean motion
    in degrees/day, semi-major axes in AU. Sources: VSOP87 / IAU.
-   The three planets are mapped to facets of the practice:
-     Artwork    → Earth   (1.0 AU,    365.256d period)
-     UX Design  → Mars    (1.524 AU,  686.971d period)
-     Music      → Venus   (0.723 AU,  224.701d period)
+   The three planets are mapped to facets of the design practice:
+     Web UX     → Venus   (0.723 AU,  224.701d period)  — closest to the sun
+     Mobile UX  → Earth   (1.0 AU,    365.256d period)
+     AI Art     → Mars    (1.524 AU,  686.971d period)  — farthest out
    ------------------------------------------------------------------------ */
 const PLANETS = {
     venus: { L0: 181.979801, n: 1.602136, period: 224.701, a: 0.7233 },
@@ -35,49 +34,51 @@ function animPeriod(planet) {
     return (EARTH_ANIM_PERIOD_SEC * planet.period) / PLANETS.earth.period;
 }
 
-/* The three facets of the practice — each is a planet in the system. */
+/* The three facets of the design practice — each is a planet in the system.
+   Distance order is deliberate: Web UX closest to the sun, Mobile UX next,
+   AI Art on the far orbit. */
 const facets = [
     {
-        key: "art",
-        label: "Artwork",
-        planet: "Earth",
-        color: "#c4432c",
-        surfaceColor: "#962f1f",
-        patternColor: "rgba(244, 220, 188, 0.55)",
-        pattern: "strokes",
-        distance: PLANETS.earth.a * DIST_SCALE,
-        size: 0.6, // Earth: baseline
-        initialAngle: currentAngleRad(PLANETS.earth),
-        animPeriodSec: animPeriod(PLANETS.earth),
-        blurb: "Two decades of work across watercolor, oil, India ink and mixed media assemblage — portraiture, abstraction and the unruly space between.",
-    },
-    {
-        key: "ux",
-        label: "UX Design",
-        planet: "Mars",
+        key: "webux",
+        label: "Web UX",
+        planet: "Venus",
         color: "#5b8def",
         surfaceColor: "#1f3a73",
         patternColor: "rgba(180, 220, 255, 0.5)",
         pattern: "grid",
-        distance: PLANETS.mars.a * DIST_SCALE,
-        size: 0.36, // Mars: ~0.53× Earth radius, bumped for legibility
-        initialAngle: currentAngleRad(PLANETS.mars),
-        animPeriodSec: animPeriod(PLANETS.mars),
-        blurb: "Product design, UI/UX and animation for web and mobile — translating a painter's eye and a musician's ear into interfaces that feel inevitable.",
-    },
-    {
-        key: "music",
-        label: "Music",
-        planet: "Venus",
-        color: "#9b6dff",
-        surfaceColor: "#3a1f55",
-        patternColor: "rgba(220, 200, 255, 0.55)",
-        pattern: "waves",
         distance: PLANETS.venus.a * DIST_SCALE,
         size: 0.57, // Venus: ~0.95× Earth radius
         initialAngle: currentAngleRad(PLANETS.venus),
         animPeriodSec: animPeriod(PLANETS.venus),
-        blurb: "Songwriting and guitar work rooted in rock and blues — tension, release, and the honest grit of a take that hurt just enough to mean something.",
+        blurb: "Websites, platforms and product surfaces for the wide screen — each project told the way it happened, as a process carousel from first hook to shipped outcome.",
+    },
+    {
+        key: "mobileux",
+        label: "Mobile UX",
+        planet: "Earth",
+        color: "#9b6dff",
+        surfaceColor: "#3a1f55",
+        patternColor: "rgba(220, 200, 255, 0.55)",
+        pattern: "waves",
+        distance: PLANETS.earth.a * DIST_SCALE,
+        size: 0.6, // Earth: baseline
+        initialAngle: currentAngleRad(PLANETS.earth),
+        animPeriodSec: animPeriod(PLANETS.earth),
+        blurb: "Interfaces for the hand — apps and mobile-first flows, documented step by step in the same exploded process language.",
+    },
+    {
+        key: "aiart",
+        label: "AI Art",
+        planet: "Mars",
+        color: "#c4432c",
+        surfaceColor: "#962f1f",
+        patternColor: "rgba(244, 220, 188, 0.55)",
+        pattern: "strokes",
+        distance: PLANETS.mars.a * DIST_SCALE,
+        size: 0.36, // Mars: ~0.53× Earth radius, bumped for legibility
+        initialAngle: currentAngleRad(PLANETS.mars),
+        animPeriodSec: animPeriod(PLANETS.mars),
+        blurb: "The outer orbit — motion pieces and AI-assisted artwork, shown as video. A painter's hand steering new instruments.",
     },
 ];
 
@@ -247,7 +248,7 @@ function PaperPlaneCard({ project, idx, isOpen, onToggle }) {
     );
 }
 
-function ArtworkFan() {
+export function ArtworkFan() {
     const [openIdx, setOpenIdx] = useState(null);
 
     return (
@@ -267,7 +268,7 @@ function ArtworkFan() {
     );
 }
 
-function ComingSoonFan({ label, accent }) {
+export function ComingSoonFan({ label, accent }) {
     return (
         <div
             className="rounded-2xl border border-ink/15 bg-sand/40 p-10 md:p-14 text-center mx-auto max-w-2xl"
@@ -315,10 +316,10 @@ export default function WorkShowcase() {
                     </div>
                 </div>
                 <p className="font-sans text-sm text-ink-soft max-w-sm leading-relaxed md:text-right md:self-end">
-                    Three planets, one practice. Artwork rides Earth, UX
-                    Design rides Mars, Music rides Venus — positioned at
-                    their real heliocentric longitudes right now, orbiting
-                    in their true proportional rhythms.
+                    Three planets, one practice. Web UX rides Venus,
+                    Mobile UX rides Earth, AI Art rides Mars — positioned
+                    at their real heliocentric longitudes right now,
+                    orbiting in their true proportional rhythms.
                 </p>
             </div>
 
@@ -401,9 +402,10 @@ export default function WorkShowcase() {
                     </div>
 
                     <div className="mt-10 md:mt-14">
-                        {selected.key === "art" && <ArtworkFan />}
-                        {selected.key === "ux" && <UXCarFleet />}
-                        {selected.key === "music" && <MusicBoatFleet />}
+                        <ExplodedProjects
+                            facetKey={selected.key}
+                            accent={selected.color}
+                        />
                     </div>
                 </div>
             )}
