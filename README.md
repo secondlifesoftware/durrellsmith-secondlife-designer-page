@@ -138,7 +138,47 @@ The frontend will boot fine without the backend too — the UX Design planet jus
 
 ## Deployment
 
-The repo ships with a [`render.yaml`](render.yaml) blueprint — Render reads it, spins up both services automatically, and you're live in ~15 minutes.
+### Primary: served at `secondlifesoftware.com/design`
+
+The company marketing site (the `SLS_Admin` repo, deployed on Netlify) serves this
+portfolio as a page at `/design`. The two projects stay in **separate repos** — the
+stacks are incompatible, since this one needs CRACO, three.js, and its own Tailwind
+theme, while the marketing site is stock `react-scripts` + react-snap.
+
+What ties them together is the built output, not the source:
+
+```bash
+cd frontend
+yarn install
+yarn build:design                      # sets GENERATE_SOURCEMAP=false + REACT_APP_BACKEND_URL
+cp -R build/ ../../SLS_Admin/frontend/public/design/
+```
+
+`build:design` is the whole contract. Two things make the bundle path-safe:
+
+- `"homepage": "/design"` in `package.json` — CRA emits assets at `/design/static/…`
+  instead of `/static/…`, so nothing collides with the marketing site's own bundle.
+- `<BrowserRouter basename={process.env.PUBLIC_URL}>` in `App.js` — the router matches
+  `/design` as its root.
+
+Because `homepage` drives both, this same build still works at a domain root if you
+set it back to `/`.
+
+The Behance feed points at the existing SLS admin backend
+(`https://sls-admin.onrender.com/api/behance/{username}`). `https://secondlifesoftware.com`
+is already an allowed CORS origin there, so serving from the company domain needs no
+backend or DNS change at all. If the backend is unreachable the UX section falls back
+to its bundled snapshot, so the page is never empty.
+
+Keep `public/index.html` free of third-party analytics and vendor badges — it ships on
+the company domain, which runs its own GA4 Consent Mode v2 setup and privacy policy.
+
+### Alternative: standalone Render site
+
+The repo also ships a [`render.yaml`](render.yaml) blueprint that deploys this frontend
+as its own static site (this is what backs
+[durrellsmith-frontend.onrender.com](https://durrellsmith-frontend.onrender.com)). Set
+`homepage` back to `/` before building for a domain root.
 
 ### One-time setup on Render
 
