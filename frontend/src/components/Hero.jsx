@@ -12,7 +12,7 @@ export default function Hero() {
             {/* WebGL particle portrait */}
             <Suspense fallback={null}>
                 <ParticleHead
-                    imgSrc="/img/durrell.jpg"
+                    imgSrc={`${process.env.PUBLIC_URL}/img/durrell.jpg`}
                     testid={HERO.canvas}
                 />
             </Suspense>

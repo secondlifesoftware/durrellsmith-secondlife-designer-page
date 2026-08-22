@@ -29,7 +29,10 @@ const Home = () => {
 function App() {
     return (
         <div className="App">
-            <BrowserRouter>
+            {/* PUBLIC_URL comes from "homepage" in package.json, so the same
+                build works whether this is served at the domain root or under
+                a path like /design on secondlifesoftware.com. */}
+            <BrowserRouter basename={process.env.PUBLIC_URL || "/"}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                 </Routes>

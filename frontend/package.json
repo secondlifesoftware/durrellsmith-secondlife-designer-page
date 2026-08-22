@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "0.1.0",
+  "homepage": "/design",
   "private": true,
   "dependencies": {
     "@hookform/resolvers": "5.0.1",
@@ -65,7 +66,8 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "build:design": "GENERATE_SOURCEMAP=false REACT_APP_BACKEND_URL=https://sls-admin.onrender.com craco build"
   },
   "browserslist": {
     "production": [
