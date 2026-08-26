@@ -303,22 +303,34 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                     flex: 0 0 auto;
                     /* Panels share the row, so a 9-slide deck stays inside the
                        container instead of running off the edge. Caps at the
-                       original 190px so short decks look unchanged. */
-                    width: clamp(
+                       original 190px so short decks look unchanged. Held in a
+                       variable because the assembled offset below is a fraction
+                       of the CARD's width. */
+                    --pw: clamp(
                         84px,
                         calc((100% - (var(--n, 5) - 1) * 1.1rem) / var(--n, 5)),
                         var(--maxw, 190px)
                     );
+                    width: var(--pw);
                     transition:
                         margin 650ms cubic-bezier(0.22, 1.4, 0.36, 1),
                         width 650ms cubic-bezier(0.22, 1.4, 0.36, 1),
                         transform 650ms cubic-bezier(0.22, 1.4, 0.36, 1);
-                    /* assembled: a closed deck — parts tucked tight under
-                       each other so the explosion has somewhere to go */
-                    margin-left: calc(var(--i) * -14%);
-                    transform: translateY(calc(var(--i) * 4px))
-                        rotate(calc(var(--i) * -1.4deg));
-                    z-index: calc(10 - var(--i));
+                    /* Assembled: ONE stack. Every card but the first pulls back
+                       over its predecessor, leaving a ~6% sliver of edge, so a
+                       deck of any length reads as a single riffled pile.
+
+                       The offset is a fraction of --pw, i.e. of the card. It
+                       used to be a percentage margin (var(--i) * -14%), but a
+                       percentage margin resolves against the CONTAINING BLOCK,
+                       not the element — that was 14% of a ~1400px stage per
+                       card, so 9- and 11-card decks marched off the left edge
+                       instead of stacking. No backticks in here: this whole
+                       stylesheet is a JS template literal. */
+                    margin-left: calc(var(--pw) * -0.94);
+                    transform: translateY(calc(var(--i) * 3px))
+                        rotate(calc(var(--i) * -1.1deg));
+                    z-index: calc(30 - var(--i));
                 }
                 .xpv-part:first-child { margin-left: 0; }
 
@@ -400,7 +412,9 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
 
                 @media (max-width: 640px) {
                     .xpv-stage { flex-wrap: wrap; padding-top: 2.6rem; }
-                    .xpv-part { width: 30vw; }
+                    /* Set --pw, not width — the assembled stack offset is
+                       derived from it. */
+                    .xpv-part { --pw: 30vw; }
                     /* One slide per row on phones. These are dense editorial
                        layouts — two-up at ~150px is not readable, and the panel
                        is the whole point of expanding. */
