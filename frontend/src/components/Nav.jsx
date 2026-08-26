@@ -26,9 +26,16 @@ export default function Nav() {
         >
             <div className="max-w-screen-2xl mx-auto px-6 md:px-12 h-20 flex items-center justify-end">
                 <div className="flex items-center gap-8">
+                    {/* The masthead leaves the portfolio and goes back up to the
+                        parent company site. Must be the absolute URL: this
+                        bundle is also served from secondlifesoftware.com/design,
+                        where a relative "/" would only reach the subpath root.
+                        It used to be href="#top", which quietly scrolled to the
+                        hero instead of navigating anywhere. */}
                     <a
-                        href="#top"
+                        href="https://secondlifesoftware.com"
                         data-testid={NAV.logo}
+                        aria-label="Back to Second Life Software"
                         className="group flex items-center gap-3 whitespace-nowrap"
                     >
                         <span className="w-2 h-2 rounded-full bg-rust pulse-dot shrink-0" />

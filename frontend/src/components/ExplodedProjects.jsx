@@ -10,13 +10,24 @@ import React, { useState } from "react";
    exactly like an exploded assembly drawing.
 
    UPLOADING REAL WORK LATER (data-only, no layout changes needed):
-     1. Drop slide images in  frontend/public/process/<project-id>/01.png …
-        (4:5 ratio — the 2160×2700 IG carousel exports work as-is)
-        or videos for AI Art:  frontend/public/process/<project-id>/01.mp4
-     2. Fill each part's `media` below:
-        { label: "HOOK", media: { type: "image", src: "/process/wattnext/01.png" } }
+     0. Verify with content-type, not just "did the request 200". On the
+        /design deploy a wrong path returns index.html with a 200, and an
+        offscreen lazy <img> reports complete=true / naturalWidth=0 before it
+        has even been asked to load — both read as "fine" if you only count
+        broken images. Check that the response is actually image/jpeg.
+     1. Drop slide images in  frontend/public/process/<project-id>/01.jpg …
+        4:5 ratio. Downscale the 2160×2700 IG exports first — the panels are
+        only ~150-190px wide, and full-size PNGs bloat the repo badly:
+          sips -Z 1080 -s format jpeg -s formatOptions 82 in.png --out 01.jpg
+        Videos still work for films:  /process/<project-id>/01.mp4
+     2. Add a deck() call in LIBRARY below with the slides' own section titles:
+        deck("wattnext", "Title", "Client", "2026", ["Cover", "The Brief", …])
+        Label count must match the file count — deck() maps them 1:1.
+     3. For films, set media manually:
         { label: "FILM 01", media: { type: "video", src: "/process/reel/01.mp4" } }
-     3. Update the project's title / meta / year. Done.
+
+   Decks longer than 5 parts get narrower panels and staggered callouts
+   automatically (see .is-dense) — no layout work needed for a 9- or 11-up.
    ========================================================================== */
 
 const CAROUSEL_PARTS = ["Hook", "Problem", "Exploration", "Solution", "Outcome"];
@@ -41,21 +52,129 @@ const emptyReel = (id, n) => ({
     ],
 });
 
+/* A real deck. `labels` are the slides' own section titles, in deck order, so
+   the exploded callouts read as the case study's actual chapters. Slides live
+   at /process/<id>/01.jpg … — see the upload note at the top of this file. */
+const deck = (id, title, meta, year, labels, opts = {}) => ({
+    id,
+    title,
+    meta,
+    year,
+    /* Portrait IG slides are the default. Pass `ratio` for a deck of landscape
+       sheets — with `fit: "contain"` so mixed source ratios letterbox inside
+       the panel instead of being centre-cropped into an unreadable sliver.
+       `maxw` lifts the width cap, which is tuned for portrait panels. */
+    ratio: opts.ratio,
+    fit: opts.fit,
+    maxw: opts.maxw,
+    parts: labels.map((label, i) => ({
+        label,
+        media: {
+            type: "image",
+            /* MUST go through PUBLIC_URL. This bundle is served from the domain
+               root on Render but from /design on Netlify, so a root-absolute
+               "/process/…" resolves to the SPA catch-all on the subpath deploy
+               and every slide silently renders as index.html (HTTP 200,
+               text/html — it does not 404, so it is easy to miss). */
+            src: `${process.env.PUBLIC_URL}/process/${id}/${String(i + 1).padStart(2, "0")}.jpg`,
+        },
+    })),
+});
+
 const LIBRARY = {
     webux: {
         unit: "IG process carousels",
-        note: "Each web project lands here as its Instagram process carousel — hook, problem, exploration, solution, outcome — exploded so the whole story reads at once.",
-        projects: [emptyCarousel("web-01", "01"), emptyCarousel("web-02", "02")],
+        note: "Each web project lands here as its Instagram process carousel — brief, exploration, architecture, outcome — exploded so the whole story reads at once.",
+        projects: [
+            deck("powerhouse", "Homeowner Wealth OS", "Power-House · Leo King", "2026", [
+                "Cover",
+                "The Brief",
+                "Reading the Brand",
+                "The Architecture",
+                "The Morning Cockpit",
+                "The Client Scorecard",
+                "Hyperlocal Intelligence",
+                "Under the Hood",
+                "The Throughline",
+            ]),
+            /* Brand world for Leo King's book — landscape sheets and web tiles
+               rather than 4:5 slides, so this deck overrides the panel shape.
+               Source ratios run 1.15 to 2.62, hence contain over cover. */
+            deck(
+                "manhood",
+                "Manhood by Design",
+                "Power-House · Leo King",
+                "2026",
+                [
+                    "Brand World",
+                    "Palette",
+                    "Type Pairing",
+                    "Homepage Hero",
+                    "Quote Card",
+                    "Workbook Card",
+                ],
+                { ratio: "16 / 10", fit: "contain", maxw: "260px" }
+            ),
+            deck("dashcreatives", "Turning 91 MB Into One Question", "dashcreatives.art", "2026", [
+                "Cover",
+                "One File",
+                "91 MB",
+                "The Name",
+                "Twenty-Eight Files",
+                "The Catalog",
+                "The Rulebook",
+                "The Gateway",
+                "It Breaks",
+                "Four Worlds",
+                "The Result",
+            ]),
+            deck("sls-portfolio", "Teaching 40,000 Dots", "Second Life Software", "2026", [
+                "Cover",
+                "The Prompt",
+                "The Interview",
+                "The Rulebook",
+                "Raw Material",
+                "First Render",
+                "Art Direction",
+                "Iteration",
+                "The System",
+                "Input / Output",
+            ]),
+        ],
     },
     mobileux: {
         unit: "IG process carousels",
         note: "Mobile work reads the same way — the carousel slides pulled apart like an assembly drawing of the design process.",
-        projects: [emptyCarousel("mob-01", "01"), emptyCarousel("mob-02", "02")],
+        projects: [
+            deck("flashcards", "Flashcards That Fight Back", "Second Life · Part 2", "2026", [
+                "Cover",
+                "The Concept",
+                "Iterations 02–03",
+                "Iteration 04",
+                "Iteration 05",
+                "The Payoff",
+                "The Takeaway",
+            ]),
+            emptyCarousel("mob-02", "02"),
+        ],
     },
     aiart: {
-        unit: "films",
-        note: "The far orbit shows motion — AI-assisted films and artwork, each exploded into its film, stills, and process.",
-        projects: [emptyReel("ai-01", "01"), emptyReel("ai-02", "02")],
+        unit: "generative work",
+        note: "The far orbit is where the machine does the drawing — generative presences and AI-assisted artwork, exploded prompt by prompt.",
+        projects: [
+            deck("voice-agent", "Designing a Voice You Can See", "Second Life · Part 1", "2026", [
+                "Cover",
+                "The Brief",
+                "Iteration 01",
+                "Iteration 02",
+                "Exploration",
+                "Iterations 03–04",
+                "Iterations 10–12",
+                "Iterations 13–18",
+                "The Result",
+            ]),
+            emptyReel("ai-02", "02"),
+        ],
     },
 };
 
@@ -122,7 +241,15 @@ function ExplodedProject({ project, accent, defaultOpen }) {
                 type="button"
                 aria-pressed={open}
                 onClick={() => setOpen(!open)}
-                className={`xpv-stage ${open ? "is-exploded" : ""}`}
+                style={{
+                    "--n": project.parts.length,
+                    ...(project.ratio ? { "--ratio": project.ratio } : {}),
+                    ...(project.fit ? { "--fit": project.fit } : {}),
+                    ...(project.maxw ? { "--maxw": project.maxw } : {}),
+                }}
+                className={`xpv-stage ${open ? "is-exploded" : ""} ${
+                    project.parts.length > 5 ? "is-dense" : ""
+                }`}
                 aria-label={
                     open
                         ? `Assemble ${project.title} back into a deck`
@@ -174,7 +301,14 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 .xpv-part {
                     position: relative;
                     flex: 0 0 auto;
-                    width: clamp(120px, 17vw, 190px);
+                    /* Panels share the row, so a 9-slide deck stays inside the
+                       container instead of running off the edge. Caps at the
+                       original 190px so short decks look unchanged. */
+                    width: clamp(
+                        84px,
+                        calc((100% - (var(--n, 5) - 1) * 1.1rem) / var(--n, 5)),
+                        var(--maxw, 190px)
+                    );
                     transition:
                         margin 650ms cubic-bezier(0.22, 1.4, 0.36, 1),
                         transform 650ms cubic-bezier(0.22, 1.4, 0.36, 1);
@@ -195,11 +329,14 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 .is-exploded .xpv-part:first-child { margin-left: 0; }
 
                 .xpv-panel {
-                    aspect-ratio: 4 / 5;
+                    aspect-ratio: var(--ratio, 4 / 5);
                     box-shadow: 0 1px 0 rgba(42, 24, 16, 0.12),
                         0 10px 24px -18px rgba(42, 24, 16, 0.45);
                 }
-                .xpv-media { width: 100%; height: 100%; object-fit: cover; display: block; }
+                .xpv-media {
+                    width: 100%; height: 100%; display: block;
+                    object-fit: var(--fit, cover);
+                }
                 .xpv-empty {
                     width: 100%; height: 100%;
                     display: flex; flex-direction: column;
@@ -231,6 +368,13 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 .is-exploded .xpv-callout,
                 .is-exploded .xpv-leader { opacity: 0.9; }
 
+                /* Dense decks have narrow panels, so a full label is wider than
+                   the panel it sits over. No extra stagger is needed: the
+                   exploded state already steps each part down 22px, so the
+                   callouts land on their own lines and read as a leader stack.
+                   Don't "fix" this with an even/odd offset — a 22px nudge
+                   cancels the staircase exactly and pairs collide. */
+
                 .xpv-hint {
                     position: absolute;
                     right: 0.4rem;
@@ -240,6 +384,15 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 @media (max-width: 640px) {
                     .xpv-stage { flex-wrap: wrap; padding-top: 2.6rem; }
                     .xpv-part { width: 30vw; }
+                    /* Parts wrap into rows and sit flat here, so every callout
+                       in a row shares one baseline — a long label would run
+                       into its neighbour. Let it wrap inside the panel width
+                       instead of overflowing. */
+                    .xpv-callout {
+                        white-space: normal;
+                        width: 30vw;
+                        line-height: 1.35;
+                    }
                     .is-exploded .xpv-part {
                         margin-left: 0.6rem;
                         margin-bottom: 2.6rem;
