@@ -311,6 +311,7 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                     );
                     transition:
                         margin 650ms cubic-bezier(0.22, 1.4, 0.36, 1),
+                        width 650ms cubic-bezier(0.22, 1.4, 0.36, 1),
                         transform 650ms cubic-bezier(0.22, 1.4, 0.36, 1);
                     /* assembled: a closed deck — parts tucked tight under
                        each other so the explosion has somewhere to go */
@@ -321,12 +322,24 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 }
                 .xpv-part:first-child { margin-left: 0; }
 
-                .is-exploded .xpv-part {
-                    /* exploded: parts separate along the diagonal axis */
-                    margin-left: 1.1rem;
-                    transform: translateY(calc(var(--i) * 22px)) rotate(0deg);
+                /* Exploded: the deck stops being a single row and becomes a
+                   wrapped grid of LARGE panels. A one-row explode divides the
+                   container by the part count, so an 11-slide deck lands at
+                   ~110px per panel — the slides are dense editorial layouts and
+                   are unreadable at that size. Here the panel size is fixed and
+                   the row count follows, so slides stay legible no matter how
+                   long the deck is. Reflows 4 → 3 → 2 per row as space allows,
+                   and one per row on phones. */
+                .is-exploded {
+                    flex-wrap: wrap;
+                    gap: 3.4rem 1.1rem;
+                    padding-top: 3.6rem;
                 }
-                .is-exploded .xpv-part:first-child { margin-left: 0; }
+                .is-exploded .xpv-part {
+                    width: clamp(240px, calc((100% - 3 * 1.1rem) / 4), 380px);
+                    margin-left: 0;
+                    transform: none;
+                }
 
                 .xpv-panel {
                     aspect-ratio: var(--ratio, 4 / 5);
@@ -347,12 +360,18 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 .xpv-callout {
                     position: absolute;
                     top: -2.4rem;
-                    left: 50%;
-                    transform: translateX(-50%);
+                    /* Span the panel and wrap rather than centring a nowrap
+                       line on it. Every callout in a wrapped row shares one
+                       baseline, so a long label centred on a narrow panel
+                       would overlap its neighbours. */
+                    left: 0;
+                    right: 0;
+                    text-align: center;
                     font-size: 9px;
                     letter-spacing: 0.2em;
                     text-transform: uppercase;
-                    white-space: nowrap;
+                    white-space: normal;
+                    line-height: 1.35;
                     opacity: 0;
                     transition: opacity 420ms ease 180ms;
                 }
@@ -368,12 +387,10 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 .is-exploded .xpv-callout,
                 .is-exploded .xpv-leader { opacity: 0.9; }
 
-                /* Dense decks have narrow panels, so a full label is wider than
-                   the panel it sits over. No extra stagger is needed: the
-                   exploded state already steps each part down 22px, so the
-                   callouts land on their own lines and read as a leader stack.
-                   Don't "fix" this with an even/odd offset — a 22px nudge
-                   cancels the staircase exactly and pairs collide. */
+                /* --n and --maxw size the ASSEMBLED deck only; once exploded the
+                   panel size is fixed and the rows wrap. Don't reintroduce a
+                   per-part vertical stagger to separate callouts — the callouts
+                   are panel-width and wrap, which already prevents overlap. */
 
                 .xpv-hint {
                     position: absolute;
@@ -384,19 +401,14 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 @media (max-width: 640px) {
                     .xpv-stage { flex-wrap: wrap; padding-top: 2.6rem; }
                     .xpv-part { width: 30vw; }
-                    /* Parts wrap into rows and sit flat here, so every callout
-                       in a row shares one baseline — a long label would run
-                       into its neighbour. Let it wrap inside the panel width
-                       instead of overflowing. */
-                    .xpv-callout {
-                        white-space: normal;
-                        width: 30vw;
-                        line-height: 1.35;
-                    }
+                    /* One slide per row on phones. These are dense editorial
+                       layouts — two-up at ~150px is not readable, and the panel
+                       is the whole point of expanding. */
+                    .is-exploded { gap: 3rem 0; }
                     .is-exploded .xpv-part {
-                        margin-left: 0.6rem;
-                        margin-bottom: 2.6rem;
-                        transform: translateY(0) rotate(0deg);
+                        width: 100%;
+                        margin-left: 0;
+                        transform: none;
                     }
                 }
                 @media (prefers-reduced-motion: reduce) {
