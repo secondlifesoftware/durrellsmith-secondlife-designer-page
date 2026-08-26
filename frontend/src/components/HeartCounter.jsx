@@ -30,7 +30,9 @@ export default function HeartCounter() {
             type="button"
             data-testid={HEART.button}
             onClick={click}
-            className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-cream/85 backdrop-blur-xl border border-ink/10 shadow-[0_8px_32px_rgba(42,24,16,0.12)] hover:scale-105 active:scale-95 transition-transform"
+            /* Bottom-LEFT: OrbNav owns the bottom-right corner on every DASH
+               Creatives page, and this used to sit directly underneath it. */
+            className="fixed bottom-6 left-6 md:bottom-8 md:left-8 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full bg-cream/85 backdrop-blur-xl border border-ink/10 shadow-[0_8px_32px_rgba(42,24,16,0.12)] hover:scale-105 active:scale-95 transition-transform"
         >
             <span className="relative inline-flex w-5 h-5 items-center justify-center">
                 <svg

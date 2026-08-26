@@ -8,6 +8,7 @@ import About from "@/components/About";
 import SubscribePlaceholder from "@/components/SubscribePlaceholder";
 import Footer from "@/components/Footer";
 import HeartCounter from "@/components/HeartCounter";
+import OrbNav from "@/components/OrbNav";
 import { HOME } from "@/constants/testIds";
 
 const Home = () => {
@@ -22,6 +23,7 @@ const Home = () => {
             </main>
             <Footer />
             <HeartCounter />
+            <OrbNav />
         </div>
     );
 };
