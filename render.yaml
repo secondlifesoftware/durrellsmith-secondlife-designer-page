@@ -23,7 +23,22 @@ services:
     name: durrellsmith-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: yarn install --frozen-lockfile && yarn build
+    # PUBLIC_URL=/ overrides frontend/package.json's "homepage": "/design".
+    #
+    # That homepage value is correct for the OTHER deployment of this codebase —
+    # the Netlify-hosted secondlifesoftware.com/design, which really is mounted
+    # under a /design subpath. This Render service serves the app at its DOMAIN
+    # ROOT, so the baked-in prefix made index.html request
+    # /design/static/js/main.*.js while the file actually sits at
+    # /static/js/main.*.js. Result: every asset 404s, React never mounts, and
+    # the site returns a blank page with HTTP 200 — which is why it looked
+    # healthy from the outside.
+    #
+    # Fixing it here (rather than by changing "homepage") keeps the two
+    # deployments independent: this override cannot affect the Netlify build.
+    # PUBLIC_URL takes precedence over homepage in Create React App, and craco
+    # passes it straight through.
+    buildCommand: yarn install --frozen-lockfile && PUBLIC_URL=/ yarn build
     staticPublishPath: ./build
     # SPA fallback — every unmatched URL serves the React app so deep links
     # (#work, #about, etc.) keep working on refresh.
