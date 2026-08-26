@@ -115,6 +115,17 @@ const LIBRARY = {
                 ],
                 { ratio: "16 / 10", fit: "contain", maxw: "260px" }
             ),
+            deck("wattnext", "Two Temperaments, One Brand", "WattNext · wattnext.ai", "2026", [
+                "Cover",
+                "The Brief",
+                "The Gateway",
+                "Voices In",
+                "Vision Out",
+                "The Architecture",
+                "The Palette",
+                "The Voice",
+                "The Throughline",
+            ]),
             deck("dashcreatives", "Turning 91 MB Into One Question", "dashcreatives.art", "2026", [
                 "Cover",
                 "One File",
