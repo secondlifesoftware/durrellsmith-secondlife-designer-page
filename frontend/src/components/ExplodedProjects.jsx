@@ -359,13 +359,13 @@ function ExplodedProject({ project, accent, defaultOpen }) {
 
     return (
         <div className={`xpv-project${open ? " is-open" : ""}`}>
-            {/* Drawing header — like a title block on a blueprint sheet */}
-            <div className="flex items-baseline gap-4 mb-3">
-                <h4 className="font-serif text-2xl md:text-3xl text-ink">
-                    {project.title}
-                </h4>
-                <div className="flex-1 border-b border-dashed border-ink/25" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-soft whitespace-nowrap">
+            {/* Drawing header — a blueprint title block when the deck is open
+                and has the width for one line; stacked inside a grid cell,
+                where a nowrap meta line ran straight out of the column. */}
+            <div className="xpv-head">
+                <h4 className="xpv-title font-serif text-ink">{project.title}</h4>
+                <span className="xpv-rule" aria-hidden="true" />
+                <span className="xpv-meta font-mono">
                     {project.meta} · {project.year}
                 </span>
             </div>
@@ -391,16 +391,23 @@ function ExplodedProject({ project, accent, defaultOpen }) {
                         onActivate={activate}
                     />
                 ))}
-                <button
-                    type="button"
-                    aria-pressed={open}
-                    onClick={() => setOpen(!open)}
-                    className="xpv-hint font-mono text-[10px] uppercase tracking-[0.22em]"
-                    style={{ color: accent }}
-                >
-                    {open ? "⤡ assemble" : "⤢ explode view"}
-                </button>
             </div>
+
+            <button
+                type="button"
+                aria-pressed={open}
+                onClick={() => setOpen(!open)}
+                className="xpv-toggle font-mono"
+                style={{ "--btn": accent }}
+            >
+                <span className="xpv-toggle-ico" aria-hidden="true">
+                    {open ? "⤡" : "⤢"}
+                </span>
+                {open ? "Assemble" : "Explode view"}
+                <span className="xpv-toggle-n" aria-hidden="true">
+                    {project.parts.length}
+                </span>
+            </button>
 
             {zoom !== null && (
                 <Lightbox
@@ -429,18 +436,103 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 .xpv-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(clamp(230px, 21vw, 310px), 1fr));
-                    gap: 2.6rem 1.7rem;
+                    gap: 3.2rem 1.8rem;
                     align-items: start;
                 }
                 .xpv-project { margin: 0; min-width: 0; }
                 .xpv-project.is-open { grid-column: 1 / -1; }
+
+                /* ---- deck header ----------------------------------------
+                   Stacked by default. A deck sits in a ~316px grid column, and
+                   the old one-line title block (title · rule · nowrap meta) ran
+                   329-475px wide — every meta line overflowed its column and
+                   collided with the neighbouring deck. Open decks span the full
+                   row, so they get the blueprint title block back. */
+                .xpv-head {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.3rem;
+                    margin-bottom: 0.9rem;
+                    min-width: 0;
+                }
+                .xpv-title {
+                    font-size: 1.15rem;
+                    line-height: 1.2;
+                    max-width: 100%;
+                    overflow-wrap: anywhere;
+                }
+                .xpv-rule {
+                    display: block;
+                    width: 100%;
+                    border-bottom: 1px dashed rgba(42, 24, 16, 0.25);
+                }
+                .xpv-meta {
+                    font-size: 9.5px;
+                    letter-spacing: 0.2em;
+                    text-transform: uppercase;
+                    color: var(--xpv-soft, rgba(42, 24, 16, 0.55));
+                    line-height: 1.5;
+                    max-width: 100%;
+                    overflow-wrap: anywhere;
+                }
+                .xpv-project.is-open .xpv-head {
+                    flex-direction: row;
+                    align-items: baseline;
+                    gap: 1rem;
+                    margin-bottom: 1.1rem;
+                }
+                .xpv-project.is-open .xpv-title { font-size: 1.75rem; }
+                .xpv-project.is-open .xpv-rule { flex: 1 1 auto; width: auto; }
+                .xpv-project.is-open .xpv-meta { flex: 0 0 auto; white-space: nowrap; }
+
+                /* ---- the explode / assemble control ----------------------
+                   Was 10px accent text floated in the corner of the stage and
+                   people could not find it. Now a real pill under the deck. */
+                .xpv-toggle {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-top: 0.85rem;
+                    padding: 0.5rem 0.85rem;
+                    font-size: 10px;
+                    letter-spacing: 0.18em;
+                    text-transform: uppercase;
+                    color: var(--btn);
+                    background: rgba(255, 255, 255, 0.55);
+                    border: 1.5px solid var(--btn);
+                    border-radius: 999px;
+                    cursor: pointer;
+                    line-height: 1;
+                    transition: background .16s ease, color .16s ease,
+                        box-shadow .16s ease, transform .16s ease;
+                }
+                .xpv-toggle:hover {
+                    background: var(--btn);
+                    color: #F7F3E8;
+                    box-shadow: 0 6px 18px -8px var(--btn);
+                    transform: translateY(-1px);
+                }
+                .xpv-toggle:focus-visible {
+                    outline: 2px solid var(--btn);
+                    outline-offset: 3px;
+                }
+                .xpv-toggle-ico { font-size: 13px; line-height: 1; }
+                .xpv-toggle-n {
+                    padding: 2px 6px;
+                    border-radius: 999px;
+                    border: 1px solid currentColor;
+                    font-size: 9px;
+                    line-height: 1.3;
+                    opacity: 0.75;
+                }
 
                 .xpv-stage {
                     position: relative;
                     display: flex;
                     align-items: flex-start;
                     width: 100%;
-                    padding: 3.2rem 1rem 1.6rem;
+                    padding: 3.2rem 0 0.4rem;
                     cursor: pointer;
                     border: 0;
                     background: transparent;
@@ -506,7 +598,7 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                    and one per row on phones. */
                 .is-exploded {
                     flex-wrap: wrap;
-                    gap: 3.4rem 1.1rem;
+                    gap: 4.4rem 1.1rem;
                     padding-top: 3.6rem;
                 }
                 .is-exploded .xpv-part {
@@ -705,18 +797,38 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                     .xpv-lb-media { max-width: 96vw; max-height: 74vh; }
                 }
 
-                .xpv-hint {
-                    position: absolute;
-                    right: 0.4rem;
-                    bottom: 0;
-                    appearance: none;
-                    background: none;
-                    border: 0;
-                    padding: 2px 4px;
-                    cursor: pointer;
+
+                /* tablets: two decks a row reads better than three cramped */
+                @media (max-width: 1100px) {
+                    .xpv-grid {
+                        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                    }
+                    .is-exploded .xpv-part {
+                        width: clamp(220px, calc((100% - 2 * 1.1rem) / 3), 340px);
+                    }
                 }
 
                 @media (max-width: 640px) {
+                    /* One deck per row. Two 150px decks side by side are not
+                       readable, and the header needs the full width. */
+                    .xpv-grid { grid-template-columns: 1fr; gap: 2.8rem; }
+                    .xpv-title { font-size: 1.25rem; }
+                    /* An open deck has no extra width here, so keep the header
+                       stacked rather than forcing the one-line title block. */
+                    .xpv-project.is-open .xpv-head {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 0.3rem;
+                    }
+                    .xpv-project.is-open .xpv-title { font-size: 1.35rem; }
+                    .xpv-project.is-open .xpv-rule { width: 100%; flex: none; }
+                    .xpv-project.is-open .xpv-meta { white-space: normal; }
+                    /* 44px minimum touch target */
+                    .xpv-toggle {
+                        min-height: 44px;
+                        padding: 0.7rem 1.1rem;
+                        font-size: 10.5px;
+                    }
                     .xpv-stage { flex-wrap: wrap; padding-top: 2.6rem; }
                     /* Set --pw, not width — the assembled stack offset is
                        derived from it. */
