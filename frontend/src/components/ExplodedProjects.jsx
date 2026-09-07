@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 /* ============================================================================
    ExplodedProjects — process work shown as mechanical exploded views.
@@ -92,26 +92,28 @@ const LIBRARY = {
             deck("emory-hysci", "Emory HySci Admin Portal", "Globus automation \u00b7 Emory", "2026", [
                 "Cover", "The Challenge", "Create Resources Hub", "Dashboard", "Source Video",
                 "LDAP Group Creation", "Metrics Dashboard", "Self-Service Resource Management",
-                "The Invitation",
             ]),
             deck("engagementboard", "EngagementBoard", "YouTube automation", "2026", [
                 "Cover", "The Challenge", "Analytics", "Content Opportunities", "Engagement Inbox",
-                "Sentiment Dashboard", "How to Connect", "Core Toolkit", "The Invitation",
+                "Sentiment Dashboard", "How to Connect", "Core Toolkit",
             ]),
             deck("lnqhub", "LnqHub", "Recruitment platform", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+                "Cover", "The Challenge", "The Walkthrough",
             ]),
             deck("cdanalytics", "CDAnalytics", "Claim detection", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+                "Cover", "The Challenge", "The Walkthrough",
             ]),
             deck("clearvoice", "ClearVoice", "Local transcription \u00b7 secure vault", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+                "Cover", "The Challenge", "The Walkthrough",
             ]),
             deck("realestate-crm", "Real Estate Agent CRM", "Agent CRM", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+                "Cover", "The Challenge", "The Walkthrough",
+            ]),
+            deck("voice-demos", "Quick Product Overviews", "Voice agent demos", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "Product Overviews",
             ]),
             deck("sls-admin", "SLS Admin", "In-house finance tracker", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "Admin Walkthrough", "The Invitation",
+                "Cover", "The Challenge", "The Walkthrough", "Admin Walkthrough",
             ]),
         ],
     },
@@ -125,17 +127,16 @@ const LIBRARY = {
             ]),
             deck("thirdspot", "Thirdspot", "Events app", "2026", [
                 "Cover", "The Challenge", "Create Event Before Publish", "Create Event",
-                "The Walkthrough", "Map View", "My Corner", "Create Event Flow", "The Invitation",
+                "The Walkthrough", "Map View", "My Corner", "Create Event Flow",
             ]),
             deck("narra", "Narra", "Voice-only social", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+                "Cover", "The Challenge", "The Walkthrough",
             ]),
             deck("caretrack", "CareTrack", "Care coordination", "2026", [
                 "Cover", "The Challenge", "Walkthrough 01", "Walkthrough 02", "Walkthrough 03",
-                "The Invitation",
             ]),
             deck("aura-rewards", "Aura Rewards", "Loyalty app", "2026", [
-                "Cover", "The Challenge", "Walkthrough 01", "Walkthrough 02", "The Invitation",
+                "Cover", "The Challenge", "Walkthrough 01", "Walkthrough 02",
             ]),
         ],
     },
@@ -147,29 +148,37 @@ const LIBRARY = {
                 "Cover", "The Brief", "Iteration 01", "Iteration 02", "Exploration",
                 "Iterations 03\u201304", "Iterations 10\u201312", "Iterations 13\u201318", "The Result",
             ]),
-            deck("voice-demos", "Quick Product Overviews", "Voice agent demos", "2026", [
-                "Cover", "The Challenge", "The Walkthrough", "Product Overviews", "The Invitation",
-            ]),
         ],
     },
 };
 
-function PartPanel({ part, idx, accent }) {
+function PartPanel({ part, idx, accent, exploded, onActivate }) {
     const num = String(idx + 1).padStart(2, "0");
+    const zoomable = exploded && !!part.media;
     return (
-        <div className="xpv-part" style={{ "--i": idx }}>
-            <div className="xpv-callout font-mono" style={{ color: accent }}>
+        <button
+            type="button"
+            className={`xpv-part${zoomable ? " is-zoomable" : ""}`}
+            style={{ "--i": idx }}
+            onClick={() => onActivate(idx)}
+            aria-label={
+                zoomable
+                    ? `Open ${part.label} full size`
+                    : `${part.label} — expand the deck`
+            }
+        >
+            <span className="xpv-callout font-mono" style={{ color: accent }}>
                 P·{num} {part.label}
-            </div>
-            <div className="xpv-leader" aria-hidden="true" />
-            <div className="xpv-panel rounded-xl border border-ink/20 bg-sand/50 overflow-hidden">
+            </span>
+            <span className="xpv-leader" aria-hidden="true" />
+            <span className="xpv-panel rounded-xl border border-ink/20 bg-sand/50 overflow-hidden">
                 {part.media ? (
                     part.media.type === "video" ? (
                         <video
                             className="xpv-media"
                             src={part.media.src}
-                            controls
                             playsInline
+                            muted
                             preload="metadata"
                         />
                     ) : (
@@ -181,42 +190,187 @@ function PartPanel({ part, idx, accent }) {
                         />
                     )
                 ) : (
-                    <div className="xpv-empty">
-                        <div
+                    <span className="xpv-empty">
+                        <span
                             className="font-mono text-2xl md:text-3xl"
                             style={{ color: accent }}
                         >
                             {part.video ? "▶" : `⌀${num}`}
-                        </div>
-                        <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-soft mt-2 px-3 text-center leading-relaxed">
+                        </span>
+                        <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-soft mt-2 px-3 text-center leading-relaxed">
                             {part.video ? "video" : "slide"} awaiting upload
-                        </div>
-                    </div>
+                        </span>
+                    </span>
                 )}
+                {zoomable && (
+                    <span className="xpv-zoomcue font-mono" aria-hidden="true">
+                        ⤢
+                    </span>
+                )}
+            </span>
+        </button>
+    );
+}
+
+/* ----------------------------------------------------------------------------
+   Lightbox — the slides carry real UI screenshots, and at deck scale the
+   type in them is unreadable. Clicking an exploded panel opens the slide at
+   the largest size the viewport allows (up to its native 1080x1350), with
+   arrow-key paging through the rest of the deck.
+   -------------------------------------------------------------------------- */
+function Lightbox({ project, index, onIndex, onClose, accent }) {
+    const parts = project.parts;
+    /* "fit" shrinks the slide to the viewport; a portrait 4:5 slide in a
+       landscape window is then height-capped to well under its native size,
+       which is not enough to read a screenshot. "full" shows it 1:1 and lets
+       the stage scroll, so the UI in the slide is legible at source
+       resolution. */
+    const [full, setFull] = useState(false);
+    useEffect(() => setFull(false), [index]);
+    const step = useCallback(
+        (d) => {
+            let i = index + d;
+            while (i >= 0 && i < parts.length && !parts[i].media) i += d;
+            if (i >= 0 && i < parts.length) onIndex(i);
+        },
+        [index, parts, onIndex]
+    );
+
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === "Escape") onClose();
+            else if (e.key === "ArrowRight") step(1);
+            else if (e.key === "ArrowLeft") step(-1);
+            else if (e.key === "0" || e.key === "z") setFull((v) => !v);
+        };
+        document.addEventListener("keydown", onKey);
+        /* Lock the page behind the overlay, but put back whatever was there
+           rather than assuming it was "" — the orb menu also touches this. */
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.removeEventListener("keydown", onKey);
+            document.body.style.overflow = prev;
+        };
+    }, [step, onClose]);
+
+    const part = parts[index];
+    const shown = parts.filter((x) => x.media).length;
+    const ordinal = parts.slice(0, index + 1).filter((x) => x.media).length;
+
+    return (
+        <div
+            className="xpv-lb"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${project.title} — ${part.label}`}
+            onClick={onClose}
+        >
+            <div className="xpv-lb-top font-mono">
+                <span className="xpv-lb-title">{project.title}</span>
+                <span className="xpv-lb-count" style={{ color: accent }}>
+                    {String(ordinal).padStart(2, "0")} / {String(shown).padStart(2, "0")}
+                    <span className="xpv-lb-label"> · {part.label}</span>
+                </span>
             </div>
+
+            <button
+                type="button"
+                className="xpv-lb-nav xpv-lb-prev"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    step(-1);
+                }}
+                aria-label="Previous slide"
+            >
+                ‹
+            </button>
+
+            <figure
+                className={`xpv-lb-stage${full ? " is-full" : ""}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                {part.media.type === "video" ? (
+                    <video
+                        className="xpv-lb-media"
+                        src={part.media.src}
+                        controls
+                        autoPlay
+                        playsInline
+                    />
+                ) : (
+                    <img
+                        className="xpv-lb-media"
+                        src={part.media.src}
+                        alt={part.label}
+                        onClick={() => setFull((v) => !v)}
+                        title={full ? "Click to fit" : "Click to view at full size"}
+                    />
+                )}
+            </figure>
+
+            <button
+                type="button"
+                className="xpv-lb-nav xpv-lb-next"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    step(1);
+                }}
+                aria-label="Next slide"
+            >
+                ›
+            </button>
+
+            <button
+                type="button"
+                className="xpv-lb-zoom font-mono"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setFull((v) => !v);
+                }}
+                aria-pressed={full}
+            >
+                {full ? "⤡ fit" : "⤢ full size"}
+            </button>
+
+            <button
+                type="button"
+                className="xpv-lb-close font-mono"
+                onClick={onClose}
+                aria-label="Close"
+            >
+                esc ✕
+            </button>
         </div>
     );
 }
 
 function ExplodedProject({ project, accent, defaultOpen }) {
     const [open, setOpen] = useState(!!defaultOpen);
+    const [zoom, setZoom] = useState(null);
+
+    /* Assembled, a click anywhere on the stack opens the deck. Exploded, a
+       click on a panel opens that slide full size — which is the only way the
+       screenshots are actually legible. */
+    const activate = (idx) => {
+        if (!open) setOpen(true);
+        else if (project.parts[idx].media) setZoom(idx);
+    };
+
     return (
-        <div className="xpv-project">
+        <div className={`xpv-project${open ? " is-open" : ""}`}>
             {/* Drawing header — like a title block on a blueprint sheet */}
             <div className="flex items-baseline gap-4 mb-3">
                 <h4 className="font-serif text-2xl md:text-3xl text-ink">
                     {project.title}
                 </h4>
                 <div className="flex-1 border-b border-dashed border-ink/25" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-soft">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-soft whitespace-nowrap">
                     {project.meta} · {project.year}
                 </span>
             </div>
 
-            <button
-                type="button"
-                aria-pressed={open}
-                onClick={() => setOpen(!open)}
+            <div
                 style={{
                     "--n": project.parts.length,
                     ...(project.ratio ? { "--ratio": project.ratio } : {}),
@@ -226,11 +380,6 @@ function ExplodedProject({ project, accent, defaultOpen }) {
                 className={`xpv-stage ${open ? "is-exploded" : ""} ${
                     project.parts.length > 5 ? "is-dense" : ""
                 }`}
-                aria-label={
-                    open
-                        ? `Assemble ${project.title} back into a deck`
-                        : `Explode ${project.title} into its parts`
-                }
             >
                 {project.parts.map((part, i) => (
                     <PartPanel
@@ -238,15 +387,30 @@ function ExplodedProject({ project, accent, defaultOpen }) {
                         part={part}
                         idx={i}
                         accent={accent}
+                        exploded={open}
+                        onActivate={activate}
                     />
                 ))}
-                <span
+                <button
+                    type="button"
+                    aria-pressed={open}
+                    onClick={() => setOpen(!open)}
                     className="xpv-hint font-mono text-[10px] uppercase tracking-[0.22em]"
                     style={{ color: accent }}
                 >
                     {open ? "⤡ assemble" : "⤢ explode view"}
-                </span>
-            </button>
+                </button>
+            </div>
+
+            {zoom !== null && (
+                <Lightbox
+                    project={project}
+                    index={zoom}
+                    onIndex={setZoom}
+                    onClose={() => setZoom(null)}
+                    accent={accent}
+                />
+            )}
         </div>
     );
 }
@@ -259,8 +423,17 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
         <div className="xpv-root">
             <style>{`
                 .xpv-root { --xpv-accent: ${accent}; }
-                .xpv-project { margin-bottom: 4.5rem; }
-                .xpv-project:last-child { margin-bottom: 1rem; }
+                /* Decks sit in a grid: assembled they are a ~200px stack that used to
+                   leave ~1100px of dead row beside them. Exploded, a deck takes
+                   the full width it needs. */
+                .xpv-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(clamp(230px, 21vw, 310px), 1fr));
+                    gap: 2.6rem 1.7rem;
+                    align-items: start;
+                }
+                .xpv-project { margin: 0; min-width: 0; }
+                .xpv-project.is-open { grid-column: 1 / -1; }
 
                 .xpv-stage {
                     position: relative;
@@ -275,6 +448,19 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 }
 
                 .xpv-part {
+                    /* A <button> now (it opens the slide full size), so the
+                       UA chrome has to come off before the layout below. */
+                    appearance: none;
+                    -webkit-appearance: none;
+                    background: none;
+                    border: 0;
+                    padding: 0;
+                    margin: 0;
+                    font: inherit;
+                    color: inherit;
+                    text-align: left;
+                    cursor: pointer;
+                    display: block;
                     position: relative;
                     flex: 0 0 auto;
                     /* Panels share the row, so a 9-slide deck stays inside the
@@ -380,10 +566,154 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                    per-part vertical stagger to separate callouts — the callouts
                    are panel-width and wrap, which already prevents overlap. */
 
+                .xpv-zoomcue {
+                    position: absolute;
+                    right: 6px;
+                    bottom: 6px;
+                    font-size: 11px;
+                    line-height: 1;
+                    padding: 3px 5px;
+                    border-radius: 5px;
+                    color: #F7F3E8;
+                    background: rgba(20, 20, 18, 0.55);
+                    opacity: 0;
+                    transition: opacity .18s ease;
+                }
+                .xpv-part.is-zoomable:hover .xpv-zoomcue,
+                .xpv-part.is-zoomable:focus-visible .xpv-zoomcue { opacity: 1; }
+                .xpv-part.is-zoomable:hover .xpv-panel { border-color: var(--xpv-accent); }
+                .xpv-part:focus-visible { outline: 2px solid var(--xpv-accent); outline-offset: 3px; }
+
+                /* ---- lightbox ---- */
+                .xpv-lb {
+                    position: fixed;
+                    inset: 0;
+                    z-index: 200;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(18, 16, 14, 0.94);
+                    -webkit-backdrop-filter: blur(6px);
+                    backdrop-filter: blur(6px);
+                    animation: xpv-lb-in .16s ease;
+                }
+                @keyframes xpv-lb-in { from { opacity: 0 } to { opacity: 1 } }
+                .xpv-lb-stage {
+                    margin: 0;
+                    max-width: 96vw;
+                    max-height: 88vh;
+                    display: flex;
+                }
+                /* 1:1. The stage scrolls so the whole slide is reachable even
+                   when it is taller than the window. */
+                .xpv-lb-stage.is-full {
+                    max-width: 100vw;
+                    max-height: 100vh;
+                    width: 100vw;
+                    height: 100vh;
+                    overflow: auto;
+                    align-items: flex-start;
+                    justify-content: flex-start;
+                    padding: 3.4rem 1rem 4rem;
+                    overscroll-behavior: contain;
+                }
+                .xpv-lb-stage.is-full .xpv-lb-media {
+                    max-width: none;
+                    max-height: none;
+                    width: auto;
+                    height: auto;
+                    margin: auto;
+                    border-radius: 0;
+                    cursor: zoom-out;
+                }
+                .xpv-lb-media {
+                    display: block;
+                    max-width: 96vw;
+                    max-height: 88vh;
+                    width: auto;
+                    height: auto;
+                    object-fit: contain;
+                    cursor: zoom-in;
+                    border-radius: 10px;
+                    box-shadow: 0 30px 80px -20px rgba(0,0,0,.7);
+                }
+                .xpv-lb-top {
+                    position: absolute;
+                    top: 0; left: 0; right: 0;
+                    display: flex;
+                    align-items: baseline;
+                    justify-content: space-between;
+                    gap: 1rem;
+                    padding: 1rem 1.3rem;
+                    font-size: 10px;
+                    letter-spacing: 0.22em;
+                    text-transform: uppercase;
+                    color: rgba(247,243,232,.72);
+                    pointer-events: none;
+                }
+                .xpv-lb-title { color: #F7F3E8; }
+                .xpv-lb-label { color: rgba(247,243,232,.6); }
+                .xpv-lb-nav {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 52px; height: 52px;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 30px; line-height: 1;
+                    color: #F7F3E8;
+                    background: rgba(247,243,232,.10);
+                    border: 1px solid rgba(247,243,232,.22);
+                    border-radius: 50%;
+                    cursor: pointer;
+                    transition: background .15s ease, transform .15s ease;
+                }
+                .xpv-lb-nav:hover { background: rgba(247,243,232,.2); }
+                .xpv-lb-prev { left: 18px; }
+                .xpv-lb-next { right: 18px; }
+                .xpv-lb-zoom {
+                    position: absolute;
+                    left: 18px; bottom: 18px;
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    letter-spacing: 0.22em;
+                    text-transform: uppercase;
+                    color: #F7F3E8;
+                    background: rgba(247,243,232,.10);
+                    border: 1px solid rgba(247,243,232,.22);
+                    border-radius: 999px;
+                    cursor: pointer;
+                }
+                .xpv-lb-zoom:hover { background: rgba(247,243,232,.2); }
+                .xpv-lb-close {
+                    position: absolute;
+                    right: 18px; bottom: 18px;
+                    padding: 8px 12px;
+                    font-size: 10px;
+                    letter-spacing: 0.22em;
+                    text-transform: uppercase;
+                    color: #F7F3E8;
+                    background: rgba(247,243,232,.10);
+                    border: 1px solid rgba(247,243,232,.22);
+                    border-radius: 999px;
+                    cursor: pointer;
+                }
+                .xpv-lb-close:hover { background: rgba(247,243,232,.2); }
+                @media (max-width: 640px) {
+                    .xpv-lb-nav { width: 42px; height: 42px; font-size: 24px; }
+                    .xpv-lb-prev { left: 8px; }
+                    .xpv-lb-next { right: 8px; }
+                    .xpv-lb-media { max-width: 96vw; max-height: 74vh; }
+                }
+
                 .xpv-hint {
                     position: absolute;
                     right: 0.4rem;
                     bottom: 0;
+                    appearance: none;
+                    background: none;
+                    border: 0;
+                    padding: 2px 4px;
+                    cursor: pointer;
                 }
 
                 @media (max-width: 640px) {
@@ -410,6 +740,7 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                 {lib.note}
             </p>
 
+            <div className="xpv-grid">
             {lib.projects.map((p, i) => (
                 <ExplodedProject
                     key={p.id}
@@ -418,6 +749,7 @@ export default function ExplodedProjects({ facetKey, accent = "#c4432c" }) {
                     defaultOpen={i === 0}
                 />
             ))}
+            </div>
         </div>
     );
 }
