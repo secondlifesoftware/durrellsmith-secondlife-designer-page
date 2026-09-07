@@ -30,28 +30,6 @@ import React, { useState } from "react";
    automatically (see .is-dense) — no layout work needed for a 9- or 11-up.
    ========================================================================== */
 
-const CAROUSEL_PARTS = ["Hook", "Problem", "Exploration", "Solution", "Outcome"];
-
-const emptyCarousel = (id, n) => ({
-    id: `${id}`,
-    title: `Project ${n}`,
-    meta: "Awaiting its process carousel",
-    year: "—",
-    parts: CAROUSEL_PARTS.map((label) => ({ label, media: null })),
-});
-
-const emptyReel = (id, n) => ({
-    id: `${id}`,
-    title: `Film ${n}`,
-    meta: "Awaiting upload",
-    year: "—",
-    parts: [
-        { label: "Film", media: null, video: true },
-        { label: "Stills", media: null, video: true },
-        { label: "Process", media: null, video: true },
-    ],
-});
-
 /* A real deck. `labels` are the slides' own section titles, in deck order, so
    the exploded callouts read as the case study's actual chapters. Slides live
    at /process/<id>/01.jpg … — see the upload note at the top of this file. */
@@ -86,70 +64,54 @@ const LIBRARY = {
         unit: "IG process carousels",
         note: "Each web project lands here as its Instagram process carousel — brief, exploration, architecture, outcome — exploded so the whole story reads at once.",
         projects: [
-            deck("powerhouse", "Homeowner Wealth OS", "Power-House · Leo King", "2026", [
-                "Cover",
-                "The Brief",
-                "Reading the Brand",
-                "The Architecture",
-                "The Morning Cockpit",
-                "The Client Scorecard",
-                "Hyperlocal Intelligence",
-                "Under the Hood",
-                "The Throughline",
+            deck("powerhouse", "Homeowner Wealth OS", "Power-House \u00b7 Leo King", "2026", [
+                "Cover", "The Brief", "Reading the Brand", "The Architecture",
+                "The Morning Cockpit", "The Client Scorecard", "Hyperlocal Intelligence",
+                "Under the Hood", "The Throughline",
             ]),
             /* Brand world for Leo King's book — landscape sheets and web tiles
                rather than 4:5 slides, so this deck overrides the panel shape.
                Source ratios run 1.15 to 2.62, hence contain over cover. */
             deck(
-                "manhood",
-                "Manhood by Design",
-                "Power-House · Leo King",
-                "2026",
-                [
-                    "Brand World",
-                    "Palette",
-                    "Type Pairing",
-                    "Homepage Hero",
-                    "Quote Card",
-                    "Workbook Card",
-                ],
+                "manhood", "Manhood by Design", "Power-House \u00b7 Leo King", "2026",
+                ["Brand World", "Palette", "Type Pairing", "Homepage Hero", "Quote Card", "Workbook Card"],
                 { ratio: "16 / 10", fit: "contain", maxw: "260px" }
             ),
-            deck("wattnext", "Two Temperaments, One Brand", "WattNext · wattnext.ai", "2026", [
-                "Cover",
-                "The Brief",
-                "The Gateway",
-                "Voices In",
-                "Vision Out",
-                "The Architecture",
-                "The Palette",
-                "The Voice",
-                "The Throughline",
+            deck("wattnext", "Two Temperaments, One Brand", "WattNext \u00b7 wattnext.ai", "2026", [
+                "Cover", "The Brief", "The Gateway", "Voices In", "Vision Out",
+                "The Architecture", "The Palette", "The Voice", "The Throughline",
             ]),
             deck("dashcreatives", "Turning 91 MB Into One Question", "dashcreatives.art", "2026", [
-                "Cover",
-                "One File",
-                "91 MB",
-                "The Name",
-                "Twenty-Eight Files",
-                "The Catalog",
-                "The Rulebook",
-                "The Gateway",
-                "It Breaks",
-                "Four Worlds",
-                "The Result",
+                "Cover", "One File", "91 MB", "The Name", "Twenty-Eight Files", "The Catalog",
+                "The Rulebook", "The Gateway", "It Breaks", "Four Worlds", "The Result",
             ]),
             deck("sls-portfolio", "Teaching 40,000 Dots", "Second Life Software", "2026", [
-                "Cover",
-                "The Prompt",
-                "The Interview",
-                "The Rulebook",
-                "Raw Material",
-                "First Render",
-                "Art Direction",
-                "Iteration",
-                "The System",
-                "Input / Output",
+                "Cover", "The Prompt", "The Interview", "The Rulebook", "Raw Material",
+                "First Render", "Art Direction", "Iteration", "The System", "Input / Output",
+            ]),
+            deck("emory-hysci", "Emory HySci Admin Portal", "Globus automation \u00b7 Emory", "2026", [
+                "Cover", "The Challenge", "Create Resources Hub", "Dashboard", "Source Video",
+                "LDAP Group Creation", "Metrics Dashboard", "Self-Service Resource Management",
+                "The Invitation",
+            ]),
+            deck("engagementboard", "EngagementBoard", "YouTube automation", "2026", [
+                "Cover", "The Challenge", "Analytics", "Content Opportunities", "Engagement Inbox",
+                "Sentiment Dashboard", "How to Connect", "Core Toolkit", "The Invitation",
+            ]),
+            deck("lnqhub", "LnqHub", "Recruitment platform", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+            ]),
+            deck("cdanalytics", "CDAnalytics", "Claim detection", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+            ]),
+            deck("clearvoice", "ClearVoice", "Local transcription \u00b7 secure vault", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+            ]),
+            deck("realestate-crm", "Real Estate Agent CRM", "Agent CRM", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+            ]),
+            deck("sls-admin", "SLS Admin", "In-house finance tracker", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "Admin Walkthrough", "The Invitation",
             ]),
         ],
     },
@@ -157,34 +119,37 @@ const LIBRARY = {
         unit: "IG process carousels",
         note: "Mobile work reads the same way — the carousel slides pulled apart like an assembly drawing of the design process.",
         projects: [
-            deck("flashcards", "Flashcards That Fight Back", "Second Life · Part 2", "2026", [
-                "Cover",
-                "The Concept",
-                "Iterations 02–03",
-                "Iteration 04",
-                "Iteration 05",
-                "The Payoff",
-                "The Takeaway",
+            deck("flashcards", "Flashcards That Fight Back", "Second Life \u00b7 Part 2", "2026", [
+                "Cover", "The Concept", "Iterations 02\u201303", "Iteration 04", "Iteration 05",
+                "The Payoff", "The Takeaway",
             ]),
-            emptyCarousel("mob-02", "02"),
+            deck("thirdspot", "Thirdspot", "Events app", "2026", [
+                "Cover", "The Challenge", "Create Event Before Publish", "Create Event",
+                "The Walkthrough", "Map View", "My Corner", "Create Event Flow", "The Invitation",
+            ]),
+            deck("narra", "Narra", "Voice-only social", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "The Invitation",
+            ]),
+            deck("caretrack", "CareTrack", "Care coordination", "2026", [
+                "Cover", "The Challenge", "Walkthrough 01", "Walkthrough 02", "Walkthrough 03",
+                "The Invitation",
+            ]),
+            deck("aura-rewards", "Aura Rewards", "Loyalty app", "2026", [
+                "Cover", "The Challenge", "Walkthrough 01", "Walkthrough 02", "The Invitation",
+            ]),
         ],
     },
     aiart: {
         unit: "generative work",
         note: "The far orbit is where the machine does the drawing — generative presences and AI-assisted artwork, exploded prompt by prompt.",
         projects: [
-            deck("voice-agent", "Designing a Voice You Can See", "Second Life · Part 1", "2026", [
-                "Cover",
-                "The Brief",
-                "Iteration 01",
-                "Iteration 02",
-                "Exploration",
-                "Iterations 03–04",
-                "Iterations 10–12",
-                "Iterations 13–18",
-                "The Result",
+            deck("voice-agent", "Designing a Voice You Can See", "Second Life \u00b7 Part 1", "2026", [
+                "Cover", "The Brief", "Iteration 01", "Iteration 02", "Exploration",
+                "Iterations 03\u201304", "Iterations 10\u201312", "Iterations 13\u201318", "The Result",
             ]),
-            emptyReel("ai-02", "02"),
+            deck("voice-demos", "Quick Product Overviews", "Voice agent demos", "2026", [
+                "Cover", "The Challenge", "The Walkthrough", "Product Overviews", "The Invitation",
+            ]),
         ],
     },
 };
